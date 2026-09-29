@@ -2,6 +2,7 @@ using FileStreaming.Api.Infrastructure.DataAccess;
 using FileStreaming.Api.Infrastructure.Migrations;
 using FileStreaming.Api.Settings;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Initialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -54,6 +55,16 @@ public static class InfrastructureConfiguration
             .ScanIn(infrastructureAssembly)
             .For.All();
         });
+
+        // Migrations com a tag Development (seed de dados) só rodam nesse ambiente
+        services.AddOptions<RunnerOptions>()
+            .Configure<IHostEnvironment>((runnerOptions, environment) =>
+            {
+                runnerOptions.IncludeUntaggedMigrations = true;
+
+                if (environment.IsDevelopment())
+                    runnerOptions.Tags = [MigrationTags.Development];
+            });
 
         return services;
     }
