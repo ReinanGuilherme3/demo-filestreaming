@@ -1,4 +1,6 @@
+using FileStreaming.Api.Domain.Repositories;
 using FileStreaming.Api.Infrastructure.DataAccess;
+using FileStreaming.Api.Infrastructure.DataAccess.Repositories;
 using FileStreaming.Api.Infrastructure.Migrations;
 using FileStreaming.Api.Settings;
 using FluentMigrator.Runner;
@@ -13,6 +15,7 @@ public static class InfrastructureConfiguration
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddDbContext()
+                .AddRepositories()
                 .AddFluentMigrator();
 
         return services;
@@ -37,6 +40,15 @@ public static class InfrastructureConfiguration
 
             dbContextOptions.UseSqlServer(connectionStringsSettings.ConnectionString);
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ILogRepository, LogRepository>();
 
         return services;
     }
