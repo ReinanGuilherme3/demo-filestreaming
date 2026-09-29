@@ -1,36 +1,49 @@
-﻿using FileStreaming.Api.Infrastructure.DataAccess;
+using FileStreaming.Api.Infrastructure.DataAccess;
+using FileStreaming.Api.Infrastructure.Migrations;
+using FileStreaming.Api.Settings;
 using FluentMigrator.Runner;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+using Microsoft.Extensions.Options;
 
 namespace FileStreaming.Api.Configurations;
 
 public static class InfrastructureConfiguration
 {
-    private static void AddDbContext(IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        var connectionString = configuration.GetConnectionString("Connection");
+        services.AddDbContext()
+                .AddFluentMigrator();
 
-        services.AddDbContext<FileStreamingDbContext>(dbContextOptions =>
-        {
-            dbContextOptions.UseSqlServer(connectionString);
-        });
+        return services;
     }
 
-    private static void AddFluentMigrator(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddDbContext(this IServiceCollection services)
     {
-        var infrastructureAssembly = Assembly.Load("FluentMigratorDemo.Infrastructure");
+        services.AddDbContext<FileStreamingDbContext>((serviceProvider, dbContextOptions) =>
+        {
+            var connectionStringsSettings = serviceProvider.GetRequiredService<IOptions<ConnectionStringsSettings>>().Value;
 
-        var connectionString = configuration.GetConnectionString("Connection");
+            dbContextOptions.UseSqlServer(connectionStringsSettings.ConnectionString);
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddFluentMigrator(this IServiceCollection services)
+    {
+        var infrastructureAssembly = typeof(DatabaseMigration).Assembly;
 
         services.AddFluentMigratorCore().ConfigureRunner(config =>
         {
             var migrationRunnerBuilder = config.AddSqlServer();
 
             migrationRunnerBuilder
-            .WithGlobalConnectionString(connectionString)
+            .WithGlobalConnectionString(serviceProvider =>
+                serviceProvider.GetRequiredService<IOptions<ConnectionStringsSettings>>().Value.ConnectionString)
             .ScanIn(infrastructureAssembly)
             .For.All();
         });
+
+        return services;
     }
 }
