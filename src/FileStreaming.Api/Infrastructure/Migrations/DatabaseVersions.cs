@@ -1,6 +1,6 @@
-﻿namespace FileStreaming.Api.Infrastructure.Migrations;
+namespace FileStreaming.Api.Infrastructure.Migrations;
 
 internal sealed class DatabaseVersions
 {
-    internal const long TALBE_REGISTER_USER = 2025062001; // 2025-06-20 INCRIMENTO 1
+    internal const long TABLE_REQUEST_LOGS = 2026092901; // 2026-09-29 INCREMENTO 1
 }

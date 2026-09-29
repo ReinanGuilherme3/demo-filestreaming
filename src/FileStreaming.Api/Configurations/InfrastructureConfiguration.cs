@@ -17,6 +17,17 @@ public static class InfrastructureConfiguration
         return services;
     }
 
+    public static WebApplication MigrateDatabase(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+
+        var connectionStringsSettings = scope.ServiceProvider.GetRequiredService<IOptions<ConnectionStringsSettings>>().Value;
+
+        DatabaseMigration.Migrate(connectionStringsSettings.ConnectionString, scope.ServiceProvider);
+
+        return app;
+    }
+
     private static IServiceCollection AddDbContext(this IServiceCollection services)
     {
         services.AddDbContext<FileStreamingDbContext>((serviceProvider, dbContextOptions) =>

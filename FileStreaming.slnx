@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/FileStreaming.Api/FileStreaming.Api.csproj" />
+    <Project Path="src/FileStreaming.AppHost/FileStreaming.AppHost.csproj" />
   </Folder>
 </Solution>
